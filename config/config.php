@@ -5,7 +5,7 @@ try {
     define('HOST', 'localhost');
 
     //database name
-    define('DB_NAME', 'coffee-blend222');
+    define('DB_NAME', 'coffee-blend');
 
     //database username
     define('DB_USER', 'root');
