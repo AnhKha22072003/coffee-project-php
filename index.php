@@ -1,6 +1,6 @@
 <?php
 	require "includes/header.php";
-	require "config/config.php";
+	// require "config/config.php";
 ?>
 <?php
 	$products   = $conn->query("SELECT * FROM products");

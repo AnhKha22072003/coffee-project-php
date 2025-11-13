@@ -1,6 +1,30 @@
 <?php
+require __DIR__ . '/../config/config.php';
 session_start();
+ob_start();
 define('BASE_URL', 'http://localhost/coffee-blend/');
+?>
+<?php 
+function getProduct($conn,$id) {
+    $product = $conn->query("SELECT * FROM products WHERE id=$id")->fetch(PDO::FETCH_OBJ);
+    return $product;
+}
+function getTotalPrice($conn,$cart) {
+    $total = 0;
+    foreach($cart as $item) {
+        $product = getProduct($conn,$item['product_id']);
+        $total += $product->price * $item['quantity'];
+    }
+    return $total;
+}
+?>
+<?php 
+$cart = isset($_COOKIE['cart']) ? json_decode($_COOKIE['cart'], associative: true) : []; //?
+$totalItems = 0;
+foreach ($cart as $item) {
+    $totalItems += $item['quantity'];
+}
+// var_dump($totalItems) ;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -52,7 +76,32 @@ define('BASE_URL', 'http://localhost/coffee-blend/');
 
                     <?php if (isset($_SESSION['username'])) : ?>
 
-                        <li class="nav-item cart"><a href="cart.html" class="nav-link"><span class="icon icon-shopping_cart"></span></a>
+                        <li class="nav-item cart dropdown" style="position: relative;">
+                            <?php if($totalItems > 0 ): ?>
+                                <span   style=" padding: 2px 5px; background-color: red; border-radius: 70% 70%;
+                                                font-size: 8px; position: absolute; top:10%; right:10%;">
+                                        <?php echo $totalItems; ?>
+                                </span>
+                          
+                                <a href="cart.php" class="nav-link dropdown-toggle" id="cartDropdown" data-bs-toggle="dropdown" aria-expanded="false"><span class="icon icon-shopping_cart"></span></a>
+                                <ul class="dropdown-menu" aria-labelledby="cartDropdown" style="background-color: white;">
+                                        <?php foreach($cart as $item): 
+                                            $product = getProduct($conn,$item['product_id']);
+                                        ?>
+                                        <li style="display: flex; justify-content: space-between; padding: 5px 20px; border-bottom: 1px solid #ccc;">
+                                            <div class="col "><?php echo $product->name; ?></div>
+                                            <div class="col ">x<?php echo $item['quantity']; ?> </div>
+                                            <div class="col ">$<?php echo $product->price * $item['quantity']; ?></div>
+                                        </li>
+                                        <?php endforeach; ?>
+                                        <li style="display: flex; justify-content: end; padding: 5px 5px; font-weight: bold;">
+                                        <div>Total:</div> 
+                                        <div>   <?php echo getTotalPrice($conn,$cart) ?></div>
+                                        </li>
+                                </ul>
+                            <?php endif; ?>
+                        </li>
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <?php echo $_SESSION['username']; ?>

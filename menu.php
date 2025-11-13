@@ -1,6 +1,5 @@
 <?php
  require "includes/header.php";
- require "config/config.php";
 ?>
 
     <section class="home-slider owl-carousel">

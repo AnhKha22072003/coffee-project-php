@@ -1,6 +1,5 @@
 <?php
  require "../includes/header.php";
- require "../config/config.php";
 ?>
 <?php
  if (isset($_GET['id'])) {
@@ -12,6 +11,29 @@
 	$relatedProducts = $conn->query("SELECT * FROM products WHERE type='$product->type' AND id != $id LIMIT 4");
 	$relatedProducts = $relatedProducts->fetchAll(PDO::FETCH_OBJ);
 
+	// $cart = isset($_COOKIE['cart']) ? json_decode($_COOKIE['cart']) : [];
+	if(isset($_POST['submit']) && isset($_SESSION['user_id']))
+	{
+		$product_id = $_POST['id'];
+		$size     = $_POST['size'];
+		$quantity = $_POST['quantity'];
+		
+		if(isset($cart[$product_id]))
+		{
+			$cart[$id]["quantity"] += 1;
+		}else {
+			$cart[$product_id] = [
+				"product_id" => $product_id,
+				"size"     => $size,
+				"quantity" => $quantity
+			];
+		}
+		
+		// header("Location: " . BASE_URL . "cart.php");
+		setcookie('cart', json_encode($cart), time() + (86400 * 30), "/");
+
+		header("Location: " . BASE_URL . "products/product-single.php?id=" . $id);
+	}
  } else {
  	header("Location: " . BASE_URL . "");
  }
@@ -44,36 +66,39 @@
 				<h3><?php echo $product->name ?></h3>
 				<p class="price"><span>$<?php echo $product->price ?></span></p>
 				<p><?php echo $product->description ?></p>
-				<div class="row mt-4">
-					<div class="col-md-6">
-						<div class="form-group d-flex">
-							<div class="select-wrap">
-								<div class="icon"><span class="ion-ios-arrow-down"></span></div>
-								<select name="" id="" class="form-control">
-									<option value="">Small</option>
-									<option value="">Medium</option>
-									<option value="">Large</option>
-									<option value="">Extra Large</option>
-								</select>
+				<form method="post" action="<?php echo BASE_URL ."products/product-single.php?id=" . $id?>">
+					<input type="text" name="id" value="<?php echo $id ?>" hidden>
+					<div class="row mt-4">
+						<div class="col-md-6">
+							<div class="form-group d-flex">
+								<div class="select-wrap">
+									<div class="icon"><span class="ion-ios-arrow-down"></span></div>
+									<select name="size"  class="form-control">
+										<option value="m">Small</option>
+										<option value="s">Medium</option>
+										<option value="xs">Large</option>
+										<option value="l">Extra Large</option>
+									</select>
+								</div>
 							</div>
 						</div>
+						<div class="w-100"></div>
+						<div class="input-group col-md-6 d-flex mb-3">
+							<span class="input-group-btn mr-2">
+								<button type="button" class="quantity-left-minus btn" data-type="minus" data-field="">
+									<i class="icon-minus"></i>
+								</button>
+							</span>
+							<input type="text" id="quantity" name="quantity" class="form-control input-number" value="1" min="1" max="100">
+							<span class="input-group-btn ml-2">
+								<button type="button" class="quantity-right-plus btn" data-type="plus" data-field="">
+									<i class="icon-plus"></i>
+								</button>
+							</span>
+						</div>
 					</div>
-					<div class="w-100"></div>
-					<div class="input-group col-md-6 d-flex mb-3">
-						<span class="input-group-btn mr-2">
-							<button type="button" class="quantity-left-minus btn" data-type="minus" data-field="">
-								<i class="icon-minus"></i>
-							</button>
-						</span>
-						<input type="text" id="quantity" name="quantity" class="form-control input-number" value="1" min="1" max="100">
-						<span class="input-group-btn ml-2">
-							<button type="button" class="quantity-right-plus btn" data-type="plus" data-field="">
-								<i class="icon-plus"></i>
-							</button>
-						</span>
-					</div>
-				</div>
-				<p><a href="cart.html" class="btn btn-primary py-3 px-5">Add to Cart</a></p>
+					<button type="submit" name="submit" class="btn btn-primary py-3 px-5">Add to Cart</button>
+				</form>
 			</div>
 		</div>
 	</div>
@@ -97,7 +122,7 @@
 						<h3><a href="<?php echo BASE_URL ?>/products/<?php echo $product->id ?>"><?php echo $product->name ?>"</a></h3>
 						<p><?php echo $product->description ?>"</p>
 						<p class="price"><span>$<?php echo $product->price ?></span></p>
-						<p><a href="#" class="btn btn-primary btn-outline-primary">Add to Cart</a></p>
+						<p><a href="<?php echo BASE_URL ?>/products/<?php echo $product->id ?>" class="btn btn-primary btn-outline-primary">Show</a></p>
 					</div>
 				</div>
 			</div>
