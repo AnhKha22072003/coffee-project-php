@@ -1,6 +1,5 @@
 <?php
 require "../includes/header.php";
-require "../config/config.php";
 ?>
 <?php
 if (isset($_SESSION['username'])) {
